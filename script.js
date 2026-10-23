@@ -1,59 +1,49 @@
-// --- Smooth Scrolling للروابط الداخلية ---
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
+(function () {
+  var btn = document.querySelector('.menu-btn');
+  var nav = document.getElementById('nav-links');
+  if (btn && nav) {
+    btn.addEventListener('click', function () {
+      var open = nav.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
-});
-
-// --- Lightbox لعرض صور الشاشات مكبرة ---
-function openLightbox(imageSrc) {
-    const lightbox = document.getElementById('lightbox');
-    const lightboxImg = document.getElementById('lightbox-img');
-    
-    lightboxImg.src = imageSrc;
-    lightbox.style.display = 'flex';
-}
-
-function closeLightbox() {
-    const lightbox = document.getElementById('lightbox');
-    lightbox.style.display = 'none';
-}
-
-// إغلاق المعاينة عند الضغط على زر Esc من لوحة المفاتيح
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closeLightbox();
-    }
-});
-
-// --- تأثير الظهور التدريجي للعناصر عند التمرير (Intersection Observer) ---
-const observerOptions = {
-    threshold: 0.1
-};
-
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
-        }
+    nav.addEventListener('click', function (e) {
+      if (e.target.tagName === 'A') {
+        nav.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+      }
     });
-}, observerOptions);
+  }
 
-// تطبيق التأثير على بطاقات المميزات والـ Why Cards
-document.addEventListener('DOMContentLoaded', () => {
-    const animatedCards = document.querySelectorAll('.why-card, .feature-card, .gallery-item');
-    animatedCards.forEach(card => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        card.style.transition = 'all 0.5s ease-out';
-        observer.observe(card);
+  var box = document.getElementById('lightbox');
+  var big = document.getElementById('lightbox-img');
+  var closeBtn = box ? box.querySelector('.close-btn') : null;
+  var lastFocus = null;
+
+  function openBox(src, alt) {
+    lastFocus = document.activeElement;
+    big.src = src;
+    big.alt = alt || 'عرض مكبر';
+    box.hidden = false;
+    closeBtn.focus();
+  }
+  function closeBox() {
+    box.hidden = true;
+    big.src = '';
+    if (lastFocus) lastFocus.focus();
+  }
+
+  document.querySelectorAll('.gallery-item').forEach(function (item) {
+    item.addEventListener('click', function () {
+      var img = item.querySelector('img');
+      openBox(item.getAttribute('data-src'), img ? img.alt : '');
     });
-});
+  });
+  if (box) {
+    box.addEventListener('click', function (e) {
+      if (e.target !== big) closeBox();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !box.hidden) closeBox();
+    });
+  }
+})();
